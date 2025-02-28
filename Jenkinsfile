@@ -6,8 +6,8 @@ pipeline {
     stages {
         stage('Install Dependencies & Build') {
             steps {
-                sh 'npm install --cache .npm --prefer-offline'
-                sh 'npm run build'
+                
+                sh 'node -v'
             }
         }
     }
