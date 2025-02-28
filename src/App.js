@@ -5,7 +5,6 @@ import Ansible from "../src/resource/Ansible.png";
 import Terraform from "../src/resource/Terraform.png";
 import Airflow from "../src/resource/Airflow.png";
 import Docker from "../src/resource/docker.png";
-import docker from "../src/resource/docker.png";
 import Bash from "../src/resource/Bash.png";
 import java from "../src/resource/java.png";
 import Python from "../src/resource/Python.jpeg";
