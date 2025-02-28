@@ -17,6 +17,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 git branch: 'main', url: 'https://github.com/HM-Techies/portfolio.git'
+                sh"ls -la"
             }
         }
 
