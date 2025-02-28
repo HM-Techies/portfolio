@@ -60,18 +60,22 @@ pipeline {
                             --error-document index.html
                     """
 
-                    // Apply bucket policy
-                    writeFile file: 'policy.json', text: """
+                        // Write bucket policy to a file
+                    def policy = """
                     {
                         "Version": "2012-10-17",
-                        "Statement": [{
-                            "Effect": "Allow",
-                            "Principal": "*",
-                            "Action": "s3:GetObject",
-                            "Resource": "arn:aws:s3:::$S3_BUCKET/*"
-                        }]
+                        "Statement": [
+                            {
+                                "Effect": "Allow",
+                                "Principal": "*",
+                                "Action": "s3:GetObject",
+                                "Resource": "arn:aws:s3:::${S3_BUCKET}/*"
+                            }
+                        ]
                     }
                     """
+                    writeFile file: 'policy.json', text: policy.trim()
+                    
                     sh 'aws s3api put-bucket-policy --bucket $S3_BUCKET --policy file://policy.json'
                 }
             }
