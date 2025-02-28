@@ -28,12 +28,12 @@ pipeline {
             }
         }
 
-        stage('Create S3 Bucket if Not Exists') {
+    stage('Create S3 Bucket if Not Exists') {
             steps {
                 script {
-                    def bucketExists = sh(script: "aws s3api head-bucket --bucket $S3_BUCKET 2>/dev/null || echo 'false'", returnStdout: true).trim()
+                    def bucketExists = sh(script: "docker run --rm $AWS_CLI_IMAGE aws s3api head-bucket --bucket $S3_BUCKET 2>/dev/null || echo 'false'", returnStdout: true).trim()
                     if (bucketExists == 'false') {
-                        sh "aws s3api create-bucket --bucket $S3_BUCKET --region $AWS_REGION --create-bucket-configuration LocationConstraint=$AWS_REGION"
+                        sh "docker run --rm $AWS_CLI_IMAGE aws s3api create-bucket --bucket $S3_BUCKET --region $AWS_REGION --create-bucket-configuration LocationConstraint=$AWS_REGION"
                     }
                 }
             }
@@ -41,34 +41,35 @@ pipeline {
 
         stage('Upload to S3') {
             steps {
-                sh "aws s3 sync build/ s3://$S3_BUCKET --delete"
+                sh "docker run --rm -v \$PWD/build:/build $AWS_CLI_IMAGE aws s3 sync /build s3://$S3_BUCKET --delete"
             }
         }
 
         stage('Enable S3 Static Hosting') {
             steps {
-                sh "aws s3 website s3://$S3_BUCKET --index-document index.html"
+                sh "docker run --rm $AWS_CLI_IMAGE aws s3 website s3://$S3_BUCKET --index-document index.html"
             }
         }
 
         stage('Set Public Access Policy') {
             steps {
-                sh """
-                cat <<EOF > policy.json
-                {
-                  "Version": "2012-10-17",
-                  "Statement": [
+                script {
+                    def policy = """
                     {
-                      "Effect": "Allow",
-                      "Principal": "*",
-                      "Action": "s3:GetObject",
-                      "Resource": "arn:aws:s3:::$S3_BUCKET/*"
+                      "Version": "2012-10-17",
+                      "Statement": [
+                        {
+                          "Effect": "Allow",
+                          "Principal": "*",
+                          "Action": "s3:GetObject",
+                          "Resource": "arn:aws:s3:::$S3_BUCKET/*"
+                        }
+                      ]
                     }
-                  ]
+                    """
+                    writeFile file: 'policy.json', text: policy
+                    sh "docker run --rm -v \$PWD:/workspace $AWS_CLI_IMAGE aws s3api put-bucket-policy --bucket $S3_BUCKET --policy file:///workspace/policy.json"
                 }
-                EOF
-                aws s3api put-bucket-policy --bucket $S3_BUCKET --policy file://policy.json
-                """
             }
         }
 
@@ -76,7 +77,7 @@ pipeline {
             steps {
                 script {
                     def websiteUrl = "http://${S3_BUCKET}.s3-website-${AWS_REGION}.amazonaws.com"
-                    echo "Your application is hosted at: ${websiteUrl}"
+                    echo "✅ Your application is hosted at: ${websiteUrl}"
                 }
             }
         }
