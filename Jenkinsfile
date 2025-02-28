@@ -35,12 +35,12 @@ pipeline {
         stage('Install AWS CLI') {
             steps {
                 sh """
-                apk add --no-cache python3 py3-pip
-                pip3 install --upgrade awscli
+                apk add --no-cache aws-cli
                 aws --version
                 """
-            }
+            }       
         }
+
 
         stage('Create S3 Bucket if Not Exists') {
             steps {
