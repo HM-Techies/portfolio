@@ -1,19 +1,23 @@
 pipeline {
+    options {
+        skipDefaultCheckout()  // Prevents Jenkins from checking out the repo outside the container
+    }
+
     agent {
         docker {
             image 'node:18-alpine'
             args '-v /var/run/docker.sock:/var/run/docker.sock'
-            reuseNode false  
+            reuseNode false
         }
     }
 
     environment {
         AWS_REGION = 'ap-south-1'
         S3_BUCKET = 'kahan-portfolio.com'
-        AWS_CLI_IMAGE = 'amazon/aws-cli'
     }
 
     stages {
+        
         stage('Checkout Code') {
             steps {
                 git branch: 'main', url: 'https://github.com/HM-Techies/portfolio.git'
@@ -27,13 +31,23 @@ pipeline {
                 sh 'npm run build'
             }
         }
+        stage('Install AWS CLI') {
+            steps {
+                sh """
+                apk add --no-cache python3 py3-pip
+                pip3 install --upgrade awscli
+                aws --version
+                """
+            }
+        }
+
 
     stage('Create S3 Bucket if Not Exists') {
             steps {
                 script {
-                    def bucketExists = sh(script: "docker run --rm $AWS_CLI_IMAGE aws s3api head-bucket --bucket $S3_BUCKET 2>/dev/null || echo 'false'", returnStdout: true).trim()
+                    def bucketExists = sh(script: "aws s3api head-bucket --bucket $S3_BUCKET 2>/dev/null || echo 'false'", returnStdout: true).trim()
                     if (bucketExists == 'false') {
-                        sh "docker run --rm $AWS_CLI_IMAGE aws s3api create-bucket --bucket $S3_BUCKET --region $AWS_REGION --create-bucket-configuration LocationConstraint=$AWS_REGION"
+                        sh "aws s3api create-bucket --bucket $S3_BUCKET --region $AWS_REGION --create-bucket-configuration LocationConstraint=$AWS_REGION"
                     }
                 }
             }
@@ -41,13 +55,13 @@ pipeline {
 
         stage('Upload to S3') {
             steps {
-                sh "docker run --rm -v \$PWD/build:/build $AWS_CLI_IMAGE aws s3 sync /build s3://$S3_BUCKET --delete"
+                sh "aws s3 sync app/build/ s3://$S3_BUCKET --delete"
             }
         }
 
         stage('Enable S3 Static Hosting') {
             steps {
-                sh "docker run --rm $AWS_CLI_IMAGE aws s3 website s3://$S3_BUCKET --index-document index.html"
+                sh "aws s3 website s3://$S3_BUCKET --index-document index.html"
             }
         }
 
@@ -68,16 +82,17 @@ pipeline {
                     }
                     """
                     writeFile file: 'policy.json', text: policy
-                    sh "docker run --rm -v \$PWD:/workspace $AWS_CLI_IMAGE aws s3api put-bucket-policy --bucket $S3_BUCKET --policy file:///workspace/policy.json"
+                    sh "aws s3api put-bucket-policy --bucket $S3_BUCKET --policy file://policy.json"
                 }
             }
         }
+
 
         stage('Show S3 Website URL') {
             steps {
                 script {
                     def websiteUrl = "http://${S3_BUCKET}.s3-website-${AWS_REGION}.amazonaws.com"
-                    echo "✅ Your application is hosted at: ${websiteUrl}"
+                    echo " application is hosted at: ${websiteUrl}"
                 }
             }
         }
