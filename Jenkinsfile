@@ -59,27 +59,42 @@ pipeline {
                             --index-document index.html \
                             --error-document index.html
                     """
-
-                        // Write bucket policy to a file
-                    def policy = """
-                    {
-                        "Version": "2012-10-17",
-                        "Statement": [
-                            {
-                                "Effect": "Allow",
-                                "Principal": "*",
-                                "Action": "s3:GetObject",
-                                "Resource": "arn:aws:s3:::${S3_BUCKET}/*"
-                            }
-                        ]
-                    }
-                    """
-                    writeFile file: 'policy.json', text: policy.trim()
-                    
-                    sh 'aws s3api put-bucket-policy --bucket $S3_BUCKET --policy file://policy.json'
                 }
             }
         }
+        stage('Set Public Access Policy') {
+    steps {
+        script {
+            sh """
+            # Disable "Block Public Access" settings
+            aws s3api put-public-access-block --bucket $S3_BUCKET --public-access-block-configuration '{
+                "BlockPublicAcls": false,
+                "IgnorePublicAcls": false,
+                "BlockPublicPolicy": false,
+                "RestrictPublicBuckets": false
+            }'
+
+            # Apply the S3 bucket policy
+            cat <<EOF > policy.json
+            {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": "*",
+                        "Action": "s3:GetObject",
+                        "Resource": "arn:aws:s3:::$S3_BUCKET/*"
+                    }
+                ]
+            }
+            EOF
+
+            aws s3api put-bucket-policy --bucket $S3_BUCKET --policy file://policy.json
+            """
+        }
+    }
+}
+
 
         stage('Show URL') {
             steps {
