@@ -6,7 +6,7 @@ pipeline {
     agent {
         docker {
             image 'node:18-alpine'
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
+            args '-u root -v /var/run/docker.sock:/var/run/docker.sock'
             reuseNode false
         }
     }
@@ -21,7 +21,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 git branch: 'main', url: 'https://github.com/HM-Techies/portfolio.git'
-                sh"ls -la"
+                sh "ls -la"
             }
         }
 
@@ -31,6 +31,7 @@ pipeline {
                 sh 'npm run build'
             }
         }
+
         stage('Install AWS CLI') {
             steps {
                 sh """
@@ -41,8 +42,7 @@ pipeline {
             }
         }
 
-
-    stage('Create S3 Bucket if Not Exists') {
+        stage('Create S3 Bucket if Not Exists') {
             steps {
                 script {
                     def bucketExists = sh(script: "aws s3api head-bucket --bucket $S3_BUCKET 2>/dev/null || echo 'false'", returnStdout: true).trim()
@@ -86,7 +86,6 @@ pipeline {
                 }
             }
         }
-
 
         stage('Show S3 Website URL') {
             steps {
