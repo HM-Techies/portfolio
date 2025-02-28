@@ -72,25 +72,27 @@ pipeline {
                 "IgnorePublicAcls": false,
                 "BlockPublicPolicy": false,
                 "RestrictPublicBuckets": false
-            }'
+            }'"""
 
-            # Apply the S3 bucket policy
-            cat <<EOF > policy.json
-            {
-                "Version": "2012-10-17",
-                "Statement": [
+           
+           // Write bucket policy to a file
+                def policy = """
                     {
-                        "Effect": "Allow",
-                        "Principal": "*",
-                        "Action": "s3:GetObject",
-                        "Resource": "arn:aws:s3:::$S3_BUCKET/*"
+                        "Version": "2012-10-17",
+                        "Statement": [
+                            {
+                                "Effect": "Allow",
+                                "Principal": "*",
+                                "Action": "s3:GetObject",
+                                "Resource": "arn:aws:s3:::${S3_BUCKET}/*"
+                            }
+                        ]
                     }
-                ]
-            }
-            EOF
+                    """
+                    writeFile file: 'policy.json', text: policy.trim()
 
-            aws s3api put-bucket-policy --bucket $S3_BUCKET --policy file://policy.json
-            """
+                    // Apply bucket policy
+                    sh 'aws s3api put-bucket-policy --bucket $S3_BUCKET --policy file://policy.json'
         }
     }
 }
