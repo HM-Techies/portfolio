@@ -1,0 +1,24 @@
+{
+  "files": {
+    "main.css": "/HM-Techies/portfolio.git/static/css/main.cb24c1d3.css",
+    "main.js": "/HM-Techies/portfolio.git/static/js/main.b20744a0.js",
+    "static/js/453.1407b060.chunk.js": "/HM-Techies/portfolio.git/static/js/453.1407b060.chunk.js",
+    "static/media/Airflow.png": "/HM-Techies/portfolio.git/static/media/Airflow.05b7f94922c6fe5593bd.png",
+    "static/media/sql.png": "/HM-Techies/portfolio.git/static/media/sql.85fb38d6773862e917f4.png",
+    "static/media/docker.png": "/HM-Techies/portfolio.git/static/media/docker.887a3ebcc0bc5cdd39be.png",
+    "static/media/java.png": "/HM-Techies/portfolio.git/static/media/java.86407ffa56ebe1f70b6a.png",
+    "static/media/Terraform.png": "/HM-Techies/portfolio.git/static/media/Terraform.18765d98ac4d6e1f8851.png",
+    "static/media/Jenkins.jpg": "/HM-Techies/portfolio.git/static/media/Jenkins.661da4e80279c64d4df5.jpg",
+    "static/media/m.png": "/HM-Techies/portfolio.git/static/media/m.bf8042403d8797a7ff1b.png",
+    "static/media/Linux.png": "/HM-Techies/portfolio.git/static/media/Linux.c5ea348605f7d9eefff5.png",
+    "static/media/Bash.png": "/HM-Techies/portfolio.git/static/media/Bash.78f8f86e8c7c2e8f0af0.png",
+    "index.html": "/HM-Techies/portfolio.git/index.html",
+    "main.cb24c1d3.css.map": "/HM-Techies/portfolio.git/static/css/main.cb24c1d3.css.map",
+    "main.b20744a0.js.map": "/HM-Techies/portfolio.git/static/js/main.b20744a0.js.map",
+    "453.1407b060.chunk.js.map": "/HM-Techies/portfolio.git/static/js/453.1407b060.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.cb24c1d3.css",
+    "static/js/main.b20744a0.js"
+  ]
+}
